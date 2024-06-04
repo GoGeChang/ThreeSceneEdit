@@ -4,47 +4,109 @@
       <li
         v-for="item in toolsNav"
         class="tools-list-item"
-        @click="func[item.key]()">
-        <img :src="getIconImg(item.icon)" alt="" />
-        <label for="img">{{ item.label }}</label>
+        :class="{
+          'mult-tools': item.icons,
+          'tools-list-item-active':( _globalStore.currentTopTool === item.key && !item.icons),
+        }"
+        @click="eventClick(item)">
+        <template v-if="item.icon">
+          <img :src="getIconImg(item.icon)" />
+          <label for="img">{{ item.label }}</label>
+        </template>
+        <template v-else-if="item.icons">
+          <label for="img">{{ item.label }}</label>
+          <img
+            :src="getIconImg(imgItem.icon)"
+            v-for="imgItem in item.icons"
+            @click.stop="eventClick(imgItem)" />
+        </template>
       </li>
     </ul>
+    <slot></slot>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { getIconImg } from "@/utils/globalMethods";
 import { openFileSelect } from "@/utils/topTools/tolTools";
+import navs from "./nav.json";
+import { ElMessage } from "element-plus";
+import { globalStore } from "@/store";
 
-const toolsNav = [
-  {
-    icon: "save.png",
-    label: "保存",
-    key: "save",
-  },
-  {
-    icon: "modelImport.png",
-    label: "导入",
-    key: "import",
-  },
-  {
-    icon: "modelExport.png",
-    label: "导出",
-    key: "export",
-  },
-];
+const toolsNav = navs;
+const _globalStore = globalStore();
 
 let emits = defineEmits(["click"]);
 
-const func: { [key: string]: Function } = {
+type funcType<T> = {
+  [key in EventListType]: T;
+};
+const func: funcType<Function> = {
   import: async () => {
+    _globalStore.setCurrentTopTool("import");
     let fileData = await openFileSelect();
     emits("click", { type: "import", value: fileData });
   },
-  export: async () =>{
+  export: async () => {
     emits("click", { type: "export" });
-  }
+  },
+  save: async () => {
+    emits("click", { type: "save" });
+  },
+  gridCommb: async () => {
+    emits("click", { type: "gridCommb" });
+  },
+  gridMerg: async () => {
+    emits("click", { type: "gridMerg" });
+  },
+  instaniation: async () => {
+    emits("click", { type: "instaniation" });
+  },
+  antiInstance: async () => {
+    emits("click", { type: "antiInstance" });
+  },
+  contourLine: async () => {
+    emits("click", { type: "contourLine" });
+  },
+  posiRotationX: async () => {
+    emits("click", { type: "posiRotationX" });
+  },
+  posiRotationY: async () => {
+    emits("click", { type: "posiRotationY" });
+  },
+  posiRotationZ: async () => {
+    emits("click", { type: "posiRotationZ" });
+  },
+  vertexRotationX: async () => {
+    emits("click", { type: "vertexRotationX" });
+  },
+  vertexRotationY: async () => {
+    emits("click", { type: "vertexRotationY" });
+  },
+  vertexRotationZ: async () => {
+    emits("click", { type: "vertexRotationZ" });
+  },
+  resetFront: async () => {
+    emits("click", { type: "resetFront" });
+  },
+  resetBck: async () => {
+    emits("click", { type: "resetBck" });
+  },
+  resetCenter: async () => {
+    emits("click", { type: "resetCenter" });
+  },
 };
+
+function eventClick(item: TopToolsType) {
+  let key = item.key;
+  if (item.icon && func[key]) {
+    func[key]();
+    return;
+  }
+  if (!item.icons) {
+    ElMessage.warning(`${key}该功能暂未实现`);
+  }
+}
 </script>
 <style lang="scss" scoped>
 .top-container {
@@ -56,14 +118,20 @@ const func: { [key: string]: Function } = {
     height: 100%;
     display: flex;
     align-items: center;
+    .tools-list-item-active {
+      background-color: $primaryColor;
+    }
     &-item {
+      transition: all .3s;
       font-size: 14px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      width: 60px;
+      min-width: 60px;
+      padding: 0 8px;
+      user-select: none;
       img {
         width: 14px;
         height: 14px;
@@ -71,12 +139,34 @@ const func: { [key: string]: Function } = {
         cursor: pointer;
       }
       label {
-        font-size: 12px;
+        font-size: 11px;
         margin: 4px 0;
         cursor: pointer;
       }
       &:hover {
-        background-color: black;
+        background-color: $primaryColor;
+      }
+    }
+    .mult-tools {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      &:first-child {
+        border-right: 1px solid #fff !important;
+        margin-left: 10px;
+      }
+      &:hover {
+        background-color: #1d1d1d;
+      }
+      img {
+        margin: 0 6px;
+        padding: 3px;
+        width: 17px;
+        height: 17px;
+        background-color: #545454;
+        &:hover {
+          background-color: $primaryColor;
+        }
       }
     }
   }

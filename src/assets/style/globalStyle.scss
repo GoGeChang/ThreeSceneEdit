@@ -1,0 +1,42 @@
+$bckColor: rgb(27, 27, 28);
+$primaryColor: rgb(71, 114, 179);
+$borderColor: rgb(27, 27, 28);
+$titleClor: rgb(41, 41, 45);
+$panleBckColor: #343337;
+$borderRadius: 6px;
+
+$toolsNavHeight: 45px;
+$moduleTreeWidth: 230px;
+
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #545454; 
+}
+::-webkit-scrollbar-thumb {
+  background: #DFDFDF; 
+  border-radius: $borderRadius;
+}
+
+.flex {
+  display: flex;
+}
+.flex-center{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+}
+.flex-space-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.flex-wrap{
+  flex-wrap: wrap;
+}
+.width-100 {
+  width: 100%;
+}

@@ -35,27 +35,7 @@ const funcList = [
     label: "场景",
     key: "scene",
     icon: "scene.png",
-  },
-  {
-    label: "地球",
-    key: "earth",
-    icon: "earth.png",
-  },
-  {
-    label: "动画",
-    key: "animation",
-    icon: "animation.png",
-  },
-  {
-    label: "网格拆分",
-    key: "gridSplit",
-    icon: "gridSplit.png",
-  },
-  {
-    label: "网格编辑",
-    key: "gridEdit",
-    icon: "gridEdit.png",
-  },
+  }
 ];
 const currentTab = ref(funcList[0].key);
 

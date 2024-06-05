@@ -15,65 +15,9 @@
     "key": "export"
   },
   {
-    "icon": "gridCommb.png",
-    "label": "网格组合",
-    "key": "gridCommb"
-  },
-  {
-    "icon": "gridMerg.png",
-    "label": "网格合并",
-    "key": "gridMerg"
-  },
-  {
-    "icon": "instaniation.png",
-    "label": "实例化",
-    "key": "instaniation"
-  },
-  {
-    "icon": "antiInstance.png",
-    "label": "反实例化",
-    "key": "antiInstance"
-  },
-  {
     "icon": "contourLine.png",
     "label": "提取轮廓线",
     "key": "contourLine"
-  },
-  {
-    "icons": [
-      {
-        "icon": "X.png",
-        "key": "posiRotationX"
-      },
-      {
-        "icon": "Y.png",
-        "key": "posiRotationY"
-      },
-      {
-        "icon": "Z.png",
-        "key": "posiRotationZ"
-      }
-    ],
-    "label": "坐标轴旋转",
-    "key": "posiRotation"
-  },
-  {
-    "icons": [
-      {
-        "icon": "X.png",
-        "key": "vertexRotationX"
-      },
-      {
-        "icon": "Y.png",
-        "key": "vertexRotationY"
-      },
-      {
-        "icon": "Z.png",
-        "key": "vertexRotationZ"
-      }
-    ],
-    "label": "几何轴旋转",
-    "key": "vertexRotation"
   },
   {
     "icons": [

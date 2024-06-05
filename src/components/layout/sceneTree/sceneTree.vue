@@ -1,9 +1,9 @@
 <template>
-  <div class="left-container">
-    <div class="module-name">汽车模型.gltf</div>
+  <div class="tree-container">
+    <div class="module-name">场景信息</div>
     <el-tree
       style="max-width: 600px"
-      :data="data"
+      :data="sceneTree"
       :props="defaultProps"
       :render-after-expand="false"
       @node-click="handleNodeClick">
@@ -11,7 +11,7 @@
         <div class="three-item">
           <div class="three-item-img" @click.stop="toggle(data)">
             <img
-              v-if="!data.visible"
+              v-if="data.visible"
               :src="getIconImg('show.png')"
               class="tree-visible" />
             <img v-else :src="getIconImg('hidden.png')" class="tree-visible" />
@@ -24,13 +24,23 @@
 </template>
 
 <script lang="ts" setup>
+import { onMounted, ref } from "vue";
 import { getIconImg } from "../../../utils/globalMethods";
+import * as THREE from "three";
+
+const props = defineProps({
+  scene: {
+    type: THREE.Scene,
+  },
+});
 const defaultProps = {
   children: "children",
   label: "label",
 };
 interface Tree {
   label: string;
+  id: number;
+  visible: boolean;
   children?: Tree[];
 }
 
@@ -38,77 +48,50 @@ const handleNodeClick = (data: Tree) => {
   console.log(data.children);
 };
 
-const data: Tree[] = [
-  {
-    label: "Level one 1",
-    children: [
-      {
-        label: "Level two 1-1",
-        children: [
-          {
-            label: "Level three 1-1-1",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    label: "Level one 2",
-    children: [
-      {
-        label: "Level two 2-1",
-        children: [
-          {
-            label: "Level three 2-1-1",
-            children: [
-              {
-                label: "Level three 2-1-1",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        label: "Level two 2-2",
-        children: [
-          {
-            label: "Level three 2-2-1",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    label: "Level one 3",
-    children: [
-      {
-        label: "Level two 3-1",
-        children: [
-          {
-            label: "Level three 3-1-1",
-          },
-        ],
-      },
-      {
-        label: "Level two 3-2",
-        children: [
-          {
-            label: "Level three 3-2-1",
-          },
-        ],
-      },
-    ],
-  },
-];
+const sceneTree = ref<Tree[]>([]);
 
-function toggle(data: any) {
-  data.visible = !data.visible;
+onMounted(() => {
+  if (props.scene) {
+    sceneTree.value = setSceneTree(props.scene).children;
+  }
+});
+
+function setSceneTree(
+  root: THREE.Object3D<THREE.Object3DEventMap>,
+) {
+  let tempItem: Tree = {
+    id: root.id,
+    label: root.name || root.type,
+    visible: root.visible,
+  };
+  if (root.children) {
+    tempItem.children = [];
+    root.children.forEach((item) => {
+      tempItem.children?.push(setSceneTree(item))
+    });
+  } else {
+    delete tempItem.children;
+  }
+  return tempItem
+}
+
+function toggle(data: Tree) {
+  if (props.scene) {
+    let scene = props.scene;
+    let findObj = scene.getObjectById(data.id);
+
+    if (findObj) {
+      data.visible = !data.visible;
+      findObj.visible = data.visible;
+    }
+  }
 }
 </script>
 <style lang="scss" scoped>
-.left-container {
+.tree-container {
   width: $moduleTreeWidth;
-  height: 100vh;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
   background-color: $bckColor;
   border-top-left-radius: $borderRadius;
   border-top-right-radius: $borderRadius;

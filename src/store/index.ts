@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import * as THREE from "three";
 
 export const globalStore = defineStore("global", {
   state() {
@@ -11,6 +12,10 @@ export const globalStore = defineStore("global", {
        * 顶部选中的功能栏
        */
       currentTopTool: "",
+      /**
+       * 全局Three的场景
+       */
+      scene: new THREE.Scene
     }
   },
   actions: {
@@ -27,6 +32,12 @@ export const globalStore = defineStore("global", {
      */
     setCurrentTopTool(toolName: string) {
       this.currentTopTool = toolName;
+    },
+    /**
+     * 设置全局场景
+     */
+    setScene(scene: THREE.Scene) {
+      this.scene = scene;
     }
   }
 })

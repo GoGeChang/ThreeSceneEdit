@@ -1,5 +1,5 @@
 <template>
-  <div class="container" ref="sceneAre">
+  <div class="container" ref="sceneAre" v-loading="!sceneReady" v-loading-text="'正在加载场景'">
     <topTools @click="toolsEventOperation">
       <exportPlanle
         v-if="_globalStore.currentTopTool === 'export'"></exportPlanle>
@@ -18,8 +18,10 @@
       <contourLinePanle
         v-if="_globalStore.currentTopTool === 'contourLine'"></contourLinePanle>
     </topTools>
-    <leftTree></leftTree>
-    <div class="three-scene"><threeScene @onReady="scenReady"></threeScene></div>
+    <sceneTree v-if="sceneReady" :scene="_threeScene.scene"></sceneTree>
+    <div class="three-scene">
+      <threeScene @onReady="scenReady"></threeScene>
+    </div>
     <funcTabs>
       <moduleInfor
         v-show="_globalStore.currentFuncTab === 'infor'"></moduleInfor>
@@ -38,9 +40,9 @@
 
 <script lang="ts" setup>
 import topTools from "@/components/layout/topTools/topTools.vue";
-import leftTree from "@/components/layout/leftTree/leftTree.vue";
+import sceneTree from "@/components/layout/sceneTree/sceneTree.vue";
 import funcTabs from "@/components/layout/funcTabs/funcTabs.vue";
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref, nextTick } from "vue";
 import moduleObject from "@/components/tabsModule/object/moduleObject.vue";
 import moduleInfor from "@/components/tabsModule/infor/moduleInfor.vue";
 import panelScene from "@/components/tabsModule/scene/panelScene.vue";
@@ -58,16 +60,10 @@ import contourLinePanle from "@/components/toolsModule/contourLine/contourLinePa
 import { globalStore } from "@/store";
 import threeScene from "threescene-vue3/components/threeScene.vue";
 import { ElMessage } from "element-plus";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import baseScene from "threescene-vue3/lib/baseScene";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import * as THREE from "three";
-import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
-import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
-import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
 import * as methods from "./indexMethods";
 
 const sceneAre = ref<HTMLElement>();
@@ -86,9 +82,8 @@ function toolsEventOperation(e: ToolsEventType) {
 }
 
 let _threeScene: baseScene;
+let sceneReady = ref(false);
 let glbLoader = new GLTFLoader();
-
-let composer: EffectComposer, renderPass, effectFXAA, outlinePass: OutlinePass;
 
 const toolsEvent: { [key: string]: Function } = {
   save: () => {},
@@ -99,16 +94,10 @@ const toolsEvent: { [key: string]: Function } = {
       model.scene.translateY(2);
       _threeScene.scene.add(model.scene);
       setScaleToFitSize(model.scene);
-
-      window.addEventListener("click", () => {
-        let meshs = _threeScene.raycaster.ray.intersectObjects(
-          _threeScene.scene.children,
-          true
-        );
-        if (meshs.length) {
-          outlinePass.selectedObjects = [meshs[0].object];
-        }
-      });
+      sceneReady.value = false;
+      nextTick(() =>{
+        sceneReady.value = true;
+      })
     });
   },
   export: () => {
@@ -191,39 +180,10 @@ onUnmounted(() => {
   });
 });
 
-async function scenReady(Scene: baseScene) {
+function scenReady(Scene: baseScene) {
   _threeScene = Scene;
-  createComposer();
-  _threeScene.addEventListener("onRenderAfter", () => {
-    if (composer) composer.render(); // 要在动画循环里去不断渲染后期处理器
-  });
-}
-function createComposer() {
-  composer = new EffectComposer(_threeScene.renderer);
-  // 新建一个场景通道  为了覆盖到原理来的场景上
-  renderPass = new RenderPass(_threeScene.scene, _threeScene.camera);
-  composer.addPass(renderPass);
-
-  //创建物体边缘发光通道
-  outlinePass = new OutlinePass(
-    new THREE.Vector2(window.innerWidth, window.innerHeight),
-    _threeScene.scene,
-    _threeScene.camera
-  );
-
-  composer.addPass(outlinePass);
-
-  const outputPass = new OutputPass();
-  composer.addPass(outputPass);
-
-  effectFXAA = new ShaderPass(FXAAShader);
-  effectFXAA.uniforms["resolution"].value.set(
-    1 / window.innerWidth,
-    1 / window.innerHeight
-  );
-  composer.addPass(effectFXAA);
-
-  outlinePass.selectedObjects = []; // 这里传入需要描边的物体
+  _threeScene.addEventListener("onRenderAfter", () => {});
+  sceneReady.value = true;
 }
 </script>
 <style lang="scss" scoped>

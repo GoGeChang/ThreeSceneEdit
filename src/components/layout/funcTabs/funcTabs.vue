@@ -9,12 +9,19 @@
         @click="selectTab(item.key)"></tooltipBtn>
     </div>
     <div class="func-panel">
-      <slot></slot>
+      <modelInfor
+        v-show="_globalStore.currentFuncTab === 'infor'"></modelInfor>
+      <modelObject
+        v-show="_globalStore.currentFuncTab === 'object'"></modelObject>
+      <panelScene v-show="_globalStore.currentFuncTab === 'scene'"></panelScene>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import modelObject from "@/components/tabsModule/object/modelObject.vue";
+import modelInfor from "@/components/tabsModule/infor/modelInfor.vue";
+import panelScene from "@/components/tabsModule/scene/panelScene.vue";
 import tooltipBtn from "@/components/tooltipBtn/tooltipBtn.vue";
 import { ref } from "vue";
 import { globalStore } from "@/store";
@@ -35,7 +42,7 @@ const funcList = [
     label: "场景",
     key: "scene",
     icon: "scene.png",
-  }
+  },
 ];
 const currentTab = ref(funcList[0].key);
 
@@ -49,7 +56,7 @@ function selectTab(value: string) {
   position: absolute;
   right: 5px;
   top: calc($toolsNavHeight + 8px);
-  display: flex;  
+  display: flex;
   .func-panel {
     padding: 8px;
     width: 300px;

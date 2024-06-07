@@ -52,7 +52,7 @@ const sceneTree = ref<Tree[]>([]);
 
 onMounted(() => {
   if (props.scene) {
-    sceneTree.value = setSceneTree(props.scene).children;
+    sceneTree.value = setSceneTree(props.scene).children as Tree[];
   }
 });
 

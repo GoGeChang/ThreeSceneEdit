@@ -1,40 +1,11 @@
 <template>
   <div class="container" ref="sceneAre" v-loading="!sceneReady" v-loading-text="'正在加载场景'">
-    <topTools @click="toolsEventOperation">
-      <exportPlanle
-        v-if="_globalStore.currentTopTool === 'export'"></exportPlanle>
-      <gridCommbPanle
-        v-if="_globalStore.currentTopTool === 'gridCommb'"></gridCommbPanle>
-      <gridMergPanle
-        v-if="_globalStore.currentTopTool === 'gridMerg'"></gridMergPanle>
-      <instaniationPanle
-        v-if="
-          _globalStore.currentTopTool === 'instaniation'
-        "></instaniationPanle>
-      <antiInstancePanle
-        v-if="
-          _globalStore.currentTopTool === 'antiInstance'
-        "></antiInstancePanle>
-      <contourLinePanle
-        v-if="_globalStore.currentTopTool === 'contourLine'"></contourLinePanle>
-    </topTools>
+    <topTools @click="toolsEventOperation"></topTools>
     <sceneTree v-if="sceneReady" :scene="_threeScene.scene"></sceneTree>
     <div class="three-scene">
       <threeScene @onReady="scenReady"></threeScene>
     </div>
-    <funcTabs>
-      <moduleInfor
-        v-show="_globalStore.currentFuncTab === 'infor'"></moduleInfor>
-      <moduleObject
-        v-show="_globalStore.currentFuncTab === 'object'"></moduleObject>
-      <panelScene v-show="_globalStore.currentFuncTab === 'scene'"></panelScene>
-      <moduleEarth
-        v-show="_globalStore.currentFuncTab === 'earth'"></moduleEarth>
-      <moduleGridSplit
-        v-show="_globalStore.currentFuncTab === 'gridSplit'"></moduleGridSplit>
-      <moduleGridEdit
-        v-show="_globalStore.currentFuncTab === 'gridEdit'"></moduleGridEdit>
-    </funcTabs>
+    <funcTabs></funcTabs>
   </div>
 </template>
 
@@ -43,28 +14,15 @@ import topTools from "@/components/layout/topTools/topTools.vue";
 import sceneTree from "@/components/layout/sceneTree/sceneTree.vue";
 import funcTabs from "@/components/layout/funcTabs/funcTabs.vue";
 import { onMounted, onUnmounted, ref, nextTick } from "vue";
-import moduleObject from "@/components/tabsModule/object/moduleObject.vue";
-import moduleInfor from "@/components/tabsModule/infor/moduleInfor.vue";
-import panelScene from "@/components/tabsModule/scene/panelScene.vue";
-import moduleEarth from "@/components/tabsModule/earth/panelEarth.vue";
-import moduleGridSplit from "@/components/tabsModule/gridSplit/moduleGridSplit.vue";
-import moduleGridEdit from "@/components/tabsModule/gridEdit/moduleGridEdit.vue";
 
-import exportPlanle from "@/components/toolsModule/export/exportPanle.vue";
-import gridCommbPanle from "@/components/toolsModule/gridCommb/gridCommbPanle.vue";
-import gridMergPanle from "@/components/toolsModule/gridMerg/gridMergPanle.vue";
-import instaniationPanle from "@/components/toolsModule/instaniation/instaniationPanle.vue";
-import antiInstancePanle from "@/components/toolsModule/antiInstance/antiInstancePanle.vue";
-import contourLinePanle from "@/components/toolsModule/contourLine/contourLinePanle.vue";
 
 import { globalStore } from "@/store";
 import threeScene from "threescene-vue3/components/threeScene.vue";
 import { ElMessage } from "element-plus";
 import baseScene from "threescene-vue3/lib/baseScene";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import * as THREE from "three";
-import * as methods from "./indexMethods";
+import * as modelMethods from "@/lib/model/modelMethods";
+import * as globalMethods  from "@/lib/global/globalMethods"
 
 const sceneAre = ref<HTMLElement>();
 const _globalStore = globalStore();
@@ -83,49 +41,24 @@ function toolsEventOperation(e: ToolsEventType) {
 
 let _threeScene: baseScene;
 let sceneReady = ref(false);
-let glbLoader = new GLTFLoader();
 
 const toolsEvent: { [key: string]: Function } = {
   save: () => {},
-  import: (modelDat: ArrayBuffer) => {
-    glbLoader.parse(modelDat, "./", (model) => {
-      methods.clearScene(_threeScene.scene, _threeScene.scene);
-      model.scene.userData.needExport = true;
-      model.scene.translateY(2);
-      _threeScene.scene.add(model.scene);
-      setScaleToFitSize(model.scene);
-      sceneReady.value = false;
-      nextTick(() =>{
-        sceneReady.value = true;
-      })
-    });
+  import: async (modelDat: ArrayBuffer) => {
+    let  model = await modelMethods.importModel(modelDat);
+    model.scene.translateY(2);
+
+    globalMethods.clearScene(_threeScene.scene, _threeScene.scene);
+
+    _threeScene.scene.add(model.scene);
+    setScaleToFitSize(model.scene);
+    sceneReady.value = false;
+    nextTick(() =>{
+      sceneReady.value = true;
+    })
   },
   export: () => {
-    let exporter = new GLTFExporter();
-    let exportModule = new THREE.Group();
-
-    const options = {
-      trs: true,
-      onlyVisible: true,
-      binary: true,
-    };
-
-    _threeScene.scene.traverse((obj) => {
-      if (obj.userData.needExport) {
-        exportModule.add(obj.clone());
-      }
-    });
-
-    exporter.parse(
-      exportModule,
-      (moduleData) => {
-        methods.exportModule(moduleData as ArrayBuffer);
-      },
-      (error) => {
-        ElMessage.error(error);
-      },
-      options
-    );
+    modelMethods.exportModel(_threeScene.scene);
   },
 };
 
@@ -149,7 +82,7 @@ let dragFunc: { [key: string]: any } = {
       } else {
         let modelDat = await file.arrayBuffer();
         toolsEvent.import(modelDat);
-        methods.clearScene(_threeScene.scene, _threeScene.scene);
+        globalMethods.clearScene(_threeScene.scene, _threeScene.scene);
       }
     }
   },

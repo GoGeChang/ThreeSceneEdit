@@ -6,7 +6,8 @@
         class="tools-list-item"
         :class="{
           'mult-tools': item.icons,
-          'tools-list-item-active':( _globalStore.currentTopTool === item.key && !item.icons),
+          'tools-list-item-active':
+            _globalStore.currentTopTool === item.key && !item.icons,
         }"
         @click="eventClick(item)">
         <template v-if="item.icon">
@@ -22,7 +23,18 @@
         </template>
       </li>
     </ul>
-    <slot></slot>
+    <exportPlanle
+      v-if="_globalStore.currentTopTool === 'export'"></exportPlanle>
+    <gridCommbPanle
+      v-if="_globalStore.currentTopTool === 'gridCommb'"></gridCommbPanle>
+    <gridMergPanle
+      v-if="_globalStore.currentTopTool === 'gridMerg'"></gridMergPanle>
+    <instaniationPanle
+      v-if="_globalStore.currentTopTool === 'instaniation'"></instaniationPanle>
+    <antiInstancePanle
+      v-if="_globalStore.currentTopTool === 'antiInstance'"></antiInstancePanle>
+    <contourLinePanle
+      v-if="_globalStore.currentTopTool === 'contourLine'"></contourLinePanle>
   </div>
 </template>
 
@@ -31,6 +43,12 @@ import { getIconImg } from "@/utils/globalMethods";
 import { openFileSelect } from "@/utils/topTools/tolTools";
 import navs from "./nav.json";
 import { ElMessage } from "element-plus";
+import exportPlanle from "@/components/toolsModule/export/exportPanle.vue";
+import gridCommbPanle from "@/components/toolsModule/gridCommb/gridCommbPanle.vue";
+import gridMergPanle from "@/components/toolsModule/gridMerg/gridMergPanle.vue";
+import instaniationPanle from "@/components/toolsModule/instaniation/instaniationPanle.vue";
+import antiInstancePanle from "@/components/toolsModule/antiInstance/antiInstancePanle.vue";
+import contourLinePanle from "@/components/toolsModule/contourLine/contourLinePanle.vue";
 import { globalStore } from "@/store";
 
 const toolsNav = navs;
@@ -53,18 +71,7 @@ const func: funcType<Function> = {
   save: async () => {
     emits("click", { type: "save" });
   },
-  gridCommb: async () => {
-    emits("click", { type: "gridCommb" });
-  },
-  gridMerg: async () => {
-    emits("click", { type: "gridMerg" });
-  },
-  instaniation: async () => {
-    emits("click", { type: "instaniation" });
-  },
-  antiInstance: async () => {
-    emits("click", { type: "antiInstance" });
-  },
+
   contourLine: async () => {
     emits("click", { type: "contourLine" });
   },
@@ -122,7 +129,7 @@ function eventClick(item: TopToolsType) {
       background-color: $primaryColor;
     }
     &-item {
-      transition: all .3s;
+      transition: all 0.3s;
       font-size: 14px;
       display: flex;
       flex-direction: column;

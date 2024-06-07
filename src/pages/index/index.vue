@@ -1,5 +1,9 @@
 <template>
-  <div class="container" ref="sceneAre" v-loading="!sceneReady" v-loading-text="'正在加载场景'">
+  <div
+    class="container"
+    ref="sceneAre"
+    v-loading="!sceneReady"
+    v-loading-text="'正在加载场景'">
     <topTools @click="toolsEventOperation"></topTools>
     <sceneTree v-if="sceneReady" :scene="_threeScene.scene"></sceneTree>
     <div class="three-scene">
@@ -15,27 +19,27 @@ import sceneTree from "@/components/layout/sceneTree/sceneTree.vue";
 import funcTabs from "@/components/layout/funcTabs/funcTabs.vue";
 import { onMounted, onUnmounted, ref, nextTick } from "vue";
 
-
 import { globalStore } from "@/store";
 import threeScene from "threescene-vue3/components/threeScene.vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import baseScene from "threescene-vue3/lib/baseScene";
 import * as THREE from "three";
 import * as modelMethods from "@/lib/model/modelMethods";
-import * as globalMethods  from "@/lib/global/globalMethods"
+import * as globalMethods from "@/lib/global/globalMethods";
 
 const sceneAre = ref<HTMLElement>();
 const _globalStore = globalStore();
 
 function toolsEventOperation(e: ToolsEventType) {
-  _globalStore.setCurrentTopTool(e.type);
   if (!toolsEvent[e.type]) return ElMessage.warning("功能暂未实现");
 
   toolsEvent[e.type](e.value);
-
   if (e.type === "save") {
     _globalStore.setCurrentTopTool("");
     ElMessage.success("模型保存成功");
+  }
+  if (!["export"].includes(e.type)) {
+    _globalStore.setCurrentTopTool(e.type);
   }
 }
 
@@ -45,7 +49,7 @@ let sceneReady = ref(false);
 const toolsEvent: { [key: string]: Function } = {
   save: () => {},
   import: async (modelDat: ArrayBuffer) => {
-    let  model = await modelMethods.importModel(modelDat);
+    let model = await modelMethods.importModel(modelDat);
     model.scene.translateY(2);
 
     globalMethods.clearScene(_threeScene.scene, _threeScene.scene);
@@ -53,12 +57,17 @@ const toolsEvent: { [key: string]: Function } = {
     _threeScene.scene.add(model.scene);
     setScaleToFitSize(model.scene);
     sceneReady.value = false;
-    nextTick(() =>{
+    nextTick(() => {
       sceneReady.value = true;
-    })
+    });
   },
   export: () => {
-    modelMethods.exportModel(_threeScene.scene);
+    ElMessageBox.confirm("确定要导出模型吗？", "提示", {
+      cancelButtonText: "取消",
+      confirmButtonText: "确定",
+    }).then(() => {
+      modelMethods.exportModel(_threeScene.scene);
+    });
   },
 };
 

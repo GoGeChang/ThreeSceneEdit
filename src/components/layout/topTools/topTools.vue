@@ -7,34 +7,38 @@
         :class="{
           'mult-tools': item.icons,
           'tools-list-item-active':
-            _globalStore.currentTopTool === item.key && !item.icons,
+            _topToolsStore.currentTopTool === item.key && !item.icons,
         }"
-        @click="eventClick(item)">
+        @click="eventClick(item as TopToolsType)">
         <template v-if="item.icon">
           <img :src="getIconImg(item.icon)" />
           <label for="img">{{ item.label }}</label>
+          <template
+            v-if="hasMenue.find((menueItem) => menueItem.key === item.key)">
+            <el-icon
+              class="more-icon"
+              @click.stop="toggleToolMeue(item as TopToolsType)"
+              v-if="_topToolsStore.currentToolMenue !== item.key"
+              ><ArrowRightBold
+            /></el-icon>
+            <el-icon class="more-icon" v-else><ArrowDownBold /></el-icon>
+          </template>
         </template>
         <template v-else-if="item.icons">
           <label for="img">{{ item.label }}</label>
           <img
             :src="getIconImg(imgItem.icon)"
             v-for="imgItem in item.icons"
-            @click.stop="eventClick(imgItem)" />
+            @click.stop="eventClick(imgItem as TopToolsType)" />
         </template>
       </li>
     </ul>
     <exportPlanle
-      v-if="_globalStore.currentTopTool === 'export'"></exportPlanle>
-    <gridCommbPanle
-      v-if="_globalStore.currentTopTool === 'gridCommb'"></gridCommbPanle>
-    <gridMergPanle
-      v-if="_globalStore.currentTopTool === 'gridMerg'"></gridMergPanle>
-    <instaniationPanle
-      v-if="_globalStore.currentTopTool === 'instaniation'"></instaniationPanle>
-    <antiInstancePanle
-      v-if="_globalStore.currentTopTool === 'antiInstance'"></antiInstancePanle>
+      v-if="_topToolsStore.currentTopTool === 'export'"></exportPlanle>
+
     <contourLinePanle
-      v-if="_globalStore.currentTopTool === 'contourLine'"></contourLinePanle>
+      v-if="_topToolsStore.currentTopTool === 'contourLine'"></contourLinePanle>
+    <slot></slot>
   </div>
 </template>
 
@@ -43,25 +47,29 @@ import { getIconImg } from "@/utils/globalMethods";
 import { openFileSelect } from "@/utils/topTools/tolTools";
 import navs from "./nav.json";
 import { ElMessage } from "element-plus";
-import exportPlanle from "@/components/toolsModule/export/exportPanle.vue";
-import gridCommbPanle from "@/components/toolsModule/gridCommb/gridCommbPanle.vue";
-import gridMergPanle from "@/components/toolsModule/gridMerg/gridMergPanle.vue";
-import instaniationPanle from "@/components/toolsModule/instaniation/instaniationPanle.vue";
-import antiInstancePanle from "@/components/toolsModule/antiInstance/antiInstancePanle.vue";
+
+import { topToolsStore } from "@/store/topTools/topTools";
+
 import contourLinePanle from "@/components/toolsModule/contourLine/contourLinePanle.vue";
-import { globalStore } from "@/store";
+import { ArrowRightBold, ArrowDownBold } from "@element-plus/icons-vue";
+import exportPlanle from "@/components/toolsModule/export/exportPanle.vue";
 
 const toolsNav = navs;
-const _globalStore = globalStore();
+const _topToolsStore = topToolsStore();
 
 let emits = defineEmits(["click"]);
+
+/**
+ * 有多选下拉框的功能的工具栏条目
+ */
+let hasMenue = [{ label: "模型导出", key: "export" }];
 
 type funcType<T> = {
   [key in EventListType]: T;
 };
 const func: funcType<Function> = {
   import: async () => {
-    _globalStore.setCurrentTopTool("import");
+    _topToolsStore.setCurrentTopTool("import");
     let fileData = await openFileSelect();
     emits("click", { type: "import", value: fileData });
   },
@@ -75,6 +83,7 @@ const func: funcType<Function> = {
   contourLine: async () => {
     emits("click", { type: "contourLine" });
   },
+
   posiRotationX: async () => {
     emits("click", { type: "posiRotationX" });
   },
@@ -114,6 +123,18 @@ function eventClick(item: TopToolsType) {
     ElMessage.warning(`${key}该功能暂未实现`);
   }
 }
+
+function toggleToolMeue(item: TopToolsType) {
+  let keyVal: string = item.key;
+  let selectTool = hasMenue.find((menueItem) => menueItem.key === keyVal);
+  if (
+    _topToolsStore.currentToolMenue === item.key ||
+    _topToolsStore.currentToolMenue === item.label
+  )
+    keyVal = "";
+  _topToolsStore.setCurrentToolMenue(keyVal);
+  _topToolsStore.setCurrentTopTool(selectTool!.key);
+}
 </script>
 <style lang="scss" scoped>
 .top-container {
@@ -139,6 +160,7 @@ function eventClick(item: TopToolsType) {
       min-width: 60px;
       padding: 0 8px;
       user-select: none;
+      position: relative;
       img {
         width: 14px;
         height: 14px;
@@ -149,6 +171,15 @@ function eventClick(item: TopToolsType) {
         font-size: 11px;
         margin: 4px 0;
         cursor: pointer;
+      }
+      .more-icon {
+        position: absolute;
+        right: 4px;
+        top: 8px;
+        transform: scale(0.9, 0.8);
+        &:hover {
+          color: #e6a23c;
+        }
       }
       &:hover {
         background-color: $primaryColor;

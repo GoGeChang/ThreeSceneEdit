@@ -1,19 +1,31 @@
 <template>
   <div class="func-area-container">
     <div class="func-nav">
-      <tooltipBtn
-        v-for="item in funcList"
-        :active="currentTab === item.key"
-        :content="item.label"
-        :herf="item.icon"
-        @click="selectTab(item.key)"></tooltipBtn>
+      <template v-for="item in funcList">
+        <tooltipBtn
+          v-if="['对象', '节点信息'].includes(item.label)"
+          :active="currentTab === item.key"
+          :content="item.label"
+          :herf="item.icon"
+          :disable="!_globalStore.selectedMesh"
+          @click="selectTab(item.key)">
+        </tooltipBtn>
+        <tooltipBtn
+          v-else
+          :active="currentTab === item.key"
+          :content="item.label"
+          :herf="item.icon"
+          @click="selectTab(item.key)">
+        </tooltipBtn>
+      </template>
     </div>
     <div class="func-panel">
+      <panelScene
+        v-show="_funcTabsStore.currentFuncTab === 'scene'"></panelScene>
       <modelInfor
-        v-show="_globalStore.currentFuncTab === 'infor'"></modelInfor>
+        v-show="_funcTabsStore.currentFuncTab === 'infor'"></modelInfor>
       <modelObject
-        v-show="_globalStore.currentFuncTab === 'object'"></modelObject>
-      <panelScene v-show="_globalStore.currentFuncTab === 'scene'"></panelScene>
+        v-show="_funcTabsStore.currentFuncTab === 'object'"></modelObject>
     </div>
   </div>
 </template>
@@ -24,12 +36,20 @@ import modelInfor from "@/components/tabsModule/infor/modelInfor.vue";
 import panelScene from "@/components/tabsModule/scene/panelScene.vue";
 import tooltipBtn from "@/components/tooltipBtn/tooltipBtn.vue";
 import { ref } from "vue";
+import { funcTabsStore } from "@/store/funcTabs/funcTabs";
 import { globalStore } from "@/store";
 
+const _funcTabsStore = funcTabsStore();
 const _globalStore = globalStore();
+
 const funcList = [
   {
-    label: "信息",
+    label: "场景",
+    key: "scene",
+    icon: "scene.png",
+  },
+  {
+    label: "节点信息",
     key: "infor",
     icon: "infor.png",
   },
@@ -38,17 +58,12 @@ const funcList = [
     key: "object",
     icon: "object.png",
   },
-  {
-    label: "场景",
-    key: "scene",
-    icon: "scene.png",
-  },
 ];
 const currentTab = ref(funcList[0].key);
 
 function selectTab(value: string) {
   currentTab.value = value;
-  _globalStore.setCurrentFuncTab(value);
+  _funcTabsStore.setCurrentFuncTab(value);
 }
 </script>
 <style lang="scss" scoped>

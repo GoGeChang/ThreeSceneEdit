@@ -18,23 +18,24 @@
 
 <script lang="ts" setup>
 import { onUnmounted } from "vue";
-import { globalStore } from "@/store/index.ts";
+import { topToolsStore } from "@/store/topTools/topTools";
+
 let props = defineProps<{
   clearStore: boolean;
   title: string;
 }>();
 let emits = defineEmits(["close"]);
 
-let _globalStore = globalStore();
+let _topToolsStore = topToolsStore();
 
 onUnmounted(() => {
   if (props.clearStore) {
-    _globalStore.setCurrentTopTool("");
+    _topToolsStore.setCurrentTopTool("");
   }
 });
 
 function close() {
-  _globalStore.setCurrentTopTool("");
+  _topToolsStore.setCurrentTopTool("");
   emits("close");
 }
 </script>

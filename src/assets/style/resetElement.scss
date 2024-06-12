@@ -84,3 +84,13 @@
     transform: scale(1.2);
   }
 }
+
+.el-popper{
+  &.is-dark {
+    color: #fff;
+  }
+}
+
+.el-message-box{
+  --el-messagebox-title-color: #fff;
+}

@@ -14,29 +14,34 @@ export function exportModel(
     binary: true,
   }
 ) {
-  let exporter = new GLTFExporter();
-  let exportModel = new THREE.Group();
+  return new Promise((res, rej) => {
+    let exporter = new GLTFExporter();
+    let exportModel = new THREE.Group();
 
-  exportObj.traverse((obj: THREE.Object3D<THREE.Object3DEventMap>) => {
-    if (obj.userData.needExport) {
-      exportModel.add(obj.clone());
+    exportObj.traverse((obj: THREE.Object3D<THREE.Object3DEventMap>) => {
+      if (obj.userData.needExport) {
+        exportModel.add(obj.clone());
+      }
+    });
+
+    try {
+      exporter.parse(
+        exportModel,
+        (modelData) => {
+          res(modelData)
+          downModel(modelData as ArrayBuffer);
+        },
+        (error) => {
+          console.error(error);
+        },
+        options
+      );
+      
+    } catch (error) {
+      rej()
+      return error;
     }
   });
-
-  try {
-    exporter.parse(
-      exportModel,
-      (modelData) => {
-        downModel(modelData as ArrayBuffer);
-      },
-      (error) => {
-        console.error(error);
-      },
-      options
-    );
-  } catch (error) {
-    return error;
-  }
 }
 
 /**

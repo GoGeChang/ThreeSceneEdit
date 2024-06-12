@@ -19,27 +19,29 @@ import sceneTree from "@/components/layout/sceneTree/sceneTree.vue";
 import funcTabs from "@/components/layout/funcTabs/funcTabs.vue";
 import { onMounted, onUnmounted, ref, nextTick } from "vue";
 
-import { globalStore } from "@/store";
 import threeScene from "threescene-vue3/components/threeScene.vue";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage } from "element-plus";
 import baseScene from "threescene-vue3/lib/baseScene";
+
+import { topToolsStore } from "@/store/topTools/topTools";
+
 import * as THREE from "three";
 import * as modelMethods from "@/lib/model/modelMethods";
 import * as globalMethods from "@/lib/global/globalMethods";
 
 const sceneAre = ref<HTMLElement>();
-const _globalStore = globalStore();
+const _topToolsStore = topToolsStore();
 
 function toolsEventOperation(e: ToolsEventType) {
   if (!toolsEvent[e.type]) return ElMessage.warning("功能暂未实现");
 
   toolsEvent[e.type](e.value);
   if (e.type === "save") {
-    _globalStore.setCurrentTopTool("");
+    _topToolsStore.setCurrentTopTool("");
     ElMessage.success("模型保存成功");
   }
   if (!["export"].includes(e.type)) {
-    _globalStore.setCurrentTopTool(e.type);
+    _topToolsStore.setCurrentTopTool(e.type);
   }
 }
 
@@ -59,14 +61,6 @@ const toolsEvent: { [key: string]: Function } = {
     sceneReady.value = false;
     nextTick(() => {
       sceneReady.value = true;
-    });
-  },
-  export: () => {
-    ElMessageBox.confirm("确定要导出模型吗？", "提示", {
-      cancelButtonText: "取消",
-      confirmButtonText: "确定",
-    }).then(() => {
-      modelMethods.exportModel(_threeScene.scene);
     });
   },
 };
